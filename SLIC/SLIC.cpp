@@ -25,8 +25,8 @@ int main()
 {
     const int K = 15;
     const float m = 0.8f;
-    const int move_treshold = 5;
-    const char* filename = "images/bears.jpg";
+    const int move_treshold = 10;
+    const char* filename = "images/night.jpg";
 
     // do not edit below
     cv::Mat orig_img = cv::imread(filename, CV_LOAD_IMAGE_COLOR);
@@ -172,7 +172,7 @@ int main()
             move_distance += abs(old_center[3] - new_center[3]) + abs(old_center[4] - new_center[4]);
 
             // for visualization
-            cv::line(display_img, { old_center[3], old_center[4] }, { new_center[3], new_center[4] }, get_color(ci, centers.size()), 2, cv::LINE_AA);
+            cv::line(display_img, { old_center[3], old_center[4] }, { new_center[3], new_center[4] }, get_color(ci, centers.size()), 2, cv::LINE_4);
 
             // update the center
             for (int i = 0; i < 5; i++)
