@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 
 struct NN {
 	int * n; // pocty neuronu

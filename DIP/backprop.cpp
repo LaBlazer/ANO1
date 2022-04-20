@@ -1,13 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#include <string.h>
-#include <vector>
+#include "stdafx.h"
 #include "backprop.h"
 
 #define LAMBDA 1.0
 #define ETA 0.1
+
+#define E 2.71828182845904523536
 
 #define SQR( x ) ( ( x ) * ( x ) )
 
@@ -92,16 +89,88 @@ void releaseNN( NN *& nn )
 
 void feedforward( NN * nn ) 
 { 
-	//TODO
+	int count = 0;
+
+	//std::cout << std::endl;
+
+	for (int layer = 1; layer < nn->l; layer++) {
+		//double* input = nn->y[layer - 1]; // input
+
+		for (int currentNeuron = 0; currentNeuron < nn->n[layer]; currentNeuron++) {
+			double potential = 0;
+
+			count++;
+
+			for (int previousNeuron = 0; previousNeuron < nn->n[layer - 1]; previousNeuron++) {
+				
+				potential += nn->w[layer - 1][currentNeuron][previousNeuron] * nn->y[layer - 1][previousNeuron];
+
+			}
+			double sigmoid = 1. / (1. + pow(E, -LAMBDA * potential));
+
+			nn->y[layer][currentNeuron] = sigmoid;
+
+ 			//std::cout << "k: " << layer << " i: " << currentNeuron << " y: " << nn->y[layer][currentNeuron] << " | ";
+		}
+			
+		//std::cout << std::endl;
+	}
+
+	/*std::cout << count << std::endl;
+
+	std::cout << "output: ";
+
+	for (int i = 0; i < 2; i++)
+		std::cout << nn->y[2][i] << ' ';
+
+	std::cout << std::endl;*/
 }
 
 double backpropagation( NN * nn, double * t ) 
 {
 	double error = 0.0;
 
-	//TODO
+	const int outputLayer = nn->l - 1;
+	const int outputLayerSize = nn->n[outputLayer];
+	for (int i = 0; i < outputLayerSize; i++) {
+		const double te = t[i] - nn->y[outputLayer][i];
+		error += te * te;
+	}
 
-	return error;
+	// output layer error
+	for (int i = 0; i < outputLayerSize; i++) {
+		const double lamb = LAMBDA * nn->y[outputLayer][i] * (1. - nn->y[outputLayer][i]);
+		const double e = (t[i] - nn->y[outputLayer][i]) * lamb;
+
+		nn->d[outputLayer][i] = e;
+	}
+
+	// hidden layer error
+	const int hiddenLayerCount = outputLayer - 1;
+	//const int hiddenLayerSize = nn->n[hiddenLayer];
+	for (int layer = 1; layer <= hiddenLayerCount; layer++) {
+		for (int i = 0; i < nn->n[layer]; i++) {
+			const double lamb = LAMBDA * nn->y[layer][i] * (1. - nn->y[layer][i]);
+			double te = 0;
+
+			for (int j = 0; j < nn->n[layer + 1]; j++) {
+				te += nn->d[layer + 1][j] * nn->w[layer][j][i];
+			}
+
+			nn->d[layer][i] = te * lamb;
+		}
+	}
+
+	// change weights for each connection/neruron
+	for (int layer = 0; layer < nn->l - 1; layer++) {
+		for (int i = 0; i < nn->n[layer + 1]; i++) {
+			for (int j = 0; j < nn->n[layer]; j++) {
+				nn->w[layer][i][j] += ETA * nn->d[layer + 1][i] * nn->y[layer][j];
+			}
+		}
+	}
+
+	return error * 0.5;
 }
 
 void setInput( NN * nn, double * in, bool verbose ) 
